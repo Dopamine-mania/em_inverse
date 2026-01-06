@@ -1,0 +1,46 @@
+# ========================================
+# 电磁场逆问题求解器 - 依赖清单
+# ========================================
+
+# 核心深度学习框架
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+
+# 科学计算
+numpy>=1.24.0
+scipy>=1.10.0
+
+# 数据处理
+pandas>=2.0.0
+
+# 可视化
+matplotlib>=3.7.0
+
+# 配置文件
+pyyaml>=6.0
+
+# 进度条
+tqdm>=4.65.0
+
+# ========================================
+# 安装说明
+# ========================================
+#
+# 方法 1: Conda (推荐)
+# ---------------------
+# conda create -n em_inference python=3.11 -y
+# conda activate em_inference
+# conda install pytorch torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
+# pip install numpy pandas matplotlib scipy pyyaml tqdm
+#
+# 方法 2: pip + venv
+# ------------------
+# python -m venv venv
+# source venv/bin/activate  # Linux/Mac
+# pip install -r requirements.txt
+#
+# ========================================
+# 验证安装
+# ========================================
+# python -c "import torch; print(f'PyTorch: {torch.__version__}'); print(f'CUDA: {torch.cuda.is_available()}')"

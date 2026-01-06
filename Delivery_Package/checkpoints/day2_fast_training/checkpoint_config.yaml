@@ -1,0 +1,36 @@
+data:
+  data_path: /home/jovyan/teaching_material/Work/December/ai_physics/demands/01_电磁场数据文件
+  fixed_probe_positions: false
+  max_frequency: 20.0
+  max_samples: null
+  normalize_data: false
+  num_probes: 25
+deeponet:
+  activation: gelu
+  dropout_rate: 0.05
+  hidden_layers:
+  - 256
+  - 256
+  network_preset: lightweight
+  output_dim: 256
+  use_attention: false
+  use_residual: true
+physics:
+  correlation_loss_weight: 0.01
+  enable_rbf_correction: false
+  field_loss_weight: 10.0
+  learn_rbf_gamma: false
+  probe_alignment_warning: true
+  probe_loss_weight: 50.0
+  rbf_frequency_aware: false
+  rbf_gamma: 2.0
+  smoothness_loss_weight: 0.0
+training:
+  batch_size: 128
+  display_every: 2
+  early_stopping_patience: 200
+  epochs: 1000
+  learning_rate: 0.0005
+  min_delta: 0.0001
+  plot_frequency: 2
+  save_interval: 5

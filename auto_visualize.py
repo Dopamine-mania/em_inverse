@@ -70,24 +70,17 @@ def select_diverse_samples(test_dataset, model, cfg, device, num_samples=3):
         mse = torch.mean((y_pred - y_true) ** 2).item()
         errors.append((idx, mse))
     
-    # 排序并选择：最佳（最小误差）、中等、最差（最大误差）
+    # 排序并选择：均匀分布的 num_samples 个样本
     errors.sort(key=lambda x: x[1])
-    
-    selected_indices = [
-        errors[0][0],                    # 最佳
-        errors[len(errors)//2][0],       # 中等
-        errors[-1][0]                    # 最差
-    ]
-    
-    selected_errors = [
-        errors[0][1],
-        errors[len(errors)//2][1],
-        errors[-1][1]
-    ]
-    
+
+    # 均匀采样
+    step = max(1, len(errors) // num_samples)
+    selected_indices = [errors[i * step][0] for i in range(num_samples)]
+    selected_errors = [errors[i * step][1] for i in range(num_samples)]
+
     print(f"   选择样本索引: {selected_indices}")
     print(f"   对应MSE: {[f'{e:.4f}' for e in selected_errors]}")
-    
+
     return selected_indices, selected_errors
 
 def visualize_single_sample(model, cfg, device, sample, sample_idx, mse, output_dir, case_name):
@@ -117,9 +110,13 @@ def visualize_single_sample(model, cfg, device, sample, sample_idx, mse, output_
         y = branch_data[i*4 + 1]
         probe_coords.append([x, y])
     probe_coords = np.array(probe_coords)
-    
+
+    # 提取频率（最后一个元素）
+    frequency = branch_data[-1]
+
     print(f"\n🎨 生成可视化: {case_name}")
     print(f"   样本索引: {sample_idx}")
+    print(f"   频率: {frequency:.4f}")
     print(f"   场点数量: {len(coords)}")
     print(f"   探针数量: {len(probe_coords)}")
     print(f"   探针位置范围: x=[{probe_coords[:, 0].min():.2f}, {probe_coords[:, 0].max():.2f}], "
@@ -138,34 +135,34 @@ def visualize_single_sample(model, cfg, device, sample, sample_idx, mse, output_
     
     # 1. 实空间对比图
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-    
+
     # GT
-    scatter = axes[0].scatter(coords[:, 0], coords[:, 1], c=y_true_np[:, 0], 
+    scatter = axes[0].scatter(coords[:, 0], coords[:, 1], c=y_true_np[:, 0],
                              cmap='viridis', s=10, alpha=0.7)
-    axes[0].scatter(probe_coords[:, 0], probe_coords[:, 1], 
+    axes[0].scatter(probe_coords[:, 0], probe_coords[:, 1],
                    c='red', marker='x', s=100, linewidths=2, label='Probes')
-    axes[0].set_title('Ground Truth (Real)', fontsize=14)
+    axes[0].set_title(f'Ground Truth (Real) | Freq={frequency:.3f}', fontsize=14)
     axes[0].set_xlabel('x')
     axes[0].set_ylabel('y')
     axes[0].legend()
     plt.colorbar(scatter, ax=axes[0])
-    
+
     # Prediction
-    scatter = axes[1].scatter(coords[:, 0], coords[:, 1], c=y_pred[:, 0], 
+    scatter = axes[1].scatter(coords[:, 0], coords[:, 1], c=y_pred[:, 0],
                              cmap='viridis', s=10, alpha=0.7)
-    axes[1].scatter(probe_coords[:, 0], probe_coords[:, 1], 
+    axes[1].scatter(probe_coords[:, 0], probe_coords[:, 1],
                    c='red', marker='x', s=100, linewidths=2, label='Probes')
-    axes[1].set_title('Prediction (Real)', fontsize=14)
+    axes[1].set_title(f'Prediction (Real) | MSE={mse:.5f}', fontsize=14)
     axes[1].set_xlabel('x')
     axes[1].set_ylabel('y')
     axes[1].legend()
     plt.colorbar(scatter, ax=axes[1])
-    
+
     # Error
     error = np.abs(y_true_np[:, 0] - y_pred[:, 0])
-    scatter = axes[2].scatter(coords[:, 0], coords[:, 1], c=error, 
+    scatter = axes[2].scatter(coords[:, 0], coords[:, 1], c=error,
                              cmap='hot', s=10, alpha=0.7)
-    axes[2].scatter(probe_coords[:, 0], probe_coords[:, 1], 
+    axes[2].scatter(probe_coords[:, 0], probe_coords[:, 1],
                    c='blue', marker='x', s=100, linewidths=2, label='Probes')
     axes[2].set_title(f'Error (Max={error.max():.4f})', fontsize=14)
     axes[2].set_xlabel('x')
@@ -340,11 +337,11 @@ def main():
     
     # 选择代表性样本
     selected_indices, selected_errors = select_diverse_samples(
-        test_dataset, model, cfg, device, num_samples=3
+        test_dataset, model, cfg, device, num_samples=15
     )
-    
-    # 生成可视化
-    case_names = ['best_case', 'medium_case', 'hard_case']
+
+    # 生成可视化（前15个测试样本）
+    case_names = [f'sample_{i:03d}' for i in range(15)]
     for idx, case_name, mse in zip(selected_indices, case_names, selected_errors):
         sample = test_dataset[idx]
         visualize_single_sample(model, cfg, device, sample, idx, mse, output_dir, case_name)

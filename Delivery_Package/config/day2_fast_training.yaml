@@ -1,0 +1,75 @@
+data:
+  enable_frequency_scaling: true
+  fixed_probe_positions: false  # ✅ 改为false：每个样本使用其自己的随机探针位置
+  frequency_scale_factor: 1000.0
+  grid_bounds:
+  - -2.0   # x_min (根据实际数据范围 [-1.743, 9.176] 调整)
+  - 10.0   # x_max
+  - -2.0   # y_min (根据实际数据范围 [-1.768, 9.388] 调整)
+  - 10.0   # y_max
+  grid_resolution: 128  # Full resolution for high-quality FFT
+  max_frequency: 20.0
+  max_samples: null
+  normalize_data: false
+  num_probes: 25
+  probe_sampling: simple_grid
+  use_complex_field: true
+
+deeponet:
+  activation: gelu
+  dropout_rate: 0.05
+  learning_rate: 0.002  # 从0.001提升到0.002，配合大Batch Size
+  network_preset: lightweight
+  use_attention: false
+  use_residual: true
+
+device:
+  device: auto
+  mixed_precision: false
+  num_workers: 4
+  pin_memory: true
+
+output:
+  colormap: viridis
+  dpi: 150
+  figsize:
+  - 15
+  - 10
+  output_dir: outputs/day2_fast_training
+  plot_frequency: 50  # 每50 epochs可视化一次
+  save_images: true
+
+paths:
+  checkpoint_dir: checkpoints/day2_fast_training
+  data_path: "/home/jovyan/teaching_material/Work/December/ai_physics/demands/01_电磁场数据文件"
+  output_dir: outputs/day2_fast_training
+  tensorboard_dir: outputs/day2_fast_training/tensorboard
+
+physics:
+  correlation_loss_weight: 0.01
+  enable_rbf_correction: false
+  field_loss_weight: 10.0
+  learn_rbf_gamma: false
+  probe_alignment_warning: true
+  probe_alpha: 1.0
+  probe_loss_weight: 50.0
+  rbf_frequency_aware: false
+  rbf_gamma: 2.0
+  smooth_tau: 0.1
+  smooth_type: laplacian
+  smoothness_loss_weight: 0.0
+  spectral_loss_weight: 1.0  # GPU-accelerated differentiable Spectral Loss
+  use_probe_weight: false
+
+training:
+  batch_size: 128  # 暴力提升！从8提到128（16倍）
+  display_every: 10
+  early_stopping_patience: 200
+  epochs: 1000
+  learning_rate: 0.002  # 从0.001提升到0.002
+  min_delta: 0.0001
+  optimizer: adam
+  plot_frequency: 50  # 每50 epochs生成图
+  save_interval: 50
+  scheduler: cosine
+  train_test_split: 0.8
